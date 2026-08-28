@@ -28,4 +28,4 @@ EXPOSE 10000
 
 ENV ASPNETCORE_URLS=http://0.0.0.0:10000
 
-ENTRYPOINT ["dotnet", "OnSiteApi.dll"]
+ENTRYPOINT ["dotnet", "OnSite Api.dll"]
