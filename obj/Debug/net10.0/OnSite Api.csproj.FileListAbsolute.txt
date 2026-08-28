@@ -1,0 +1,44 @@
+H:\OnSite Api\bin\Debug\net10.0\appsettings.Development.json
+H:\OnSite Api\bin\Debug\net10.0\appsettings.json
+H:\OnSite Api\bin\Debug\net10.0\OnSite Api.staticwebassets.endpoints.json
+H:\OnSite Api\bin\Debug\net10.0\OnSite Api.exe
+H:\OnSite Api\bin\Debug\net10.0\OnSite Api.deps.json
+H:\OnSite Api\bin\Debug\net10.0\OnSite Api.runtimeconfig.json
+H:\OnSite Api\bin\Debug\net10.0\OnSite Api.dll
+H:\OnSite Api\bin\Debug\net10.0\OnSite Api.pdb
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+H:\OnSite Api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+H:\OnSite Api\bin\Debug\net10.0\Npgsql.dll
+H:\OnSite Api\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+H:\OnSite Api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.csproj.AssemblyReference.cache
+H:\OnSite Api\obj\Debug\net10.0\rpswa.dswa.cache.json
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.GeneratedMSBuildEditorConfig.editorconfig
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.AssemblyInfoInputs.cache
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.AssemblyInfo.cs
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.csproj.CoreCompileInputs.cache
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.MvcApplicationPartsAssemblyInfo.cache
+H:\OnSite Api\obj\Debug\net10.0\rjimswa.dswa.cache.json
+H:\OnSite Api\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+H:\OnSite Api\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+H:\OnSite Api\obj\Debug\net10.0\scopedcss\bundle\OnSite Api.styles.css
+H:\OnSite Api\obj\Debug\net10.0\staticwebassets.build.json
+H:\OnSite Api\obj\Debug\net10.0\staticwebassets.build.json.cache
+H:\OnSite Api\obj\Debug\net10.0\staticwebassets.development.json
+H:\OnSite Api\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+H:\OnSite Api\obj\Debug\net10.0\swae.build.ex.cache
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.csproj.Up2Date
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.dll
+H:\OnSite Api\obj\Debug\net10.0\refint\OnSite Api.dll
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.pdb
+H:\OnSite Api\obj\Debug\net10.0\OnSite Api.genruntimeconfig.cache
+H:\OnSite Api\obj\Debug\net10.0\ref\OnSite Api.dll
