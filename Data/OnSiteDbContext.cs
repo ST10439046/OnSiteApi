@@ -29,6 +29,16 @@ public class OnSiteDbContext : DbContext
     public DbSet<TruckLog> TruckLogs =>
         Set<TruckLog>();
 
+    public DbSet<DeviceToken> DeviceTokens =>
+        Set<DeviceToken>();
+
+    public DbSet<Notification> Notifications =>
+        Set<Notification>();
+
+    public DbSet<NotificationPreference>
+        NotificationPreferences =>
+        Set<NotificationPreference>();
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
@@ -189,8 +199,7 @@ public class OnSiteDbContext : DbContext
                     .HasColumnName("foreman_id");
 
                 entity.Property(e => e.UpdateDate)
-                    .HasColumnName(
-                        "update_date")
+                    .HasColumnName("update_date")
                     .IsRequired();
 
                 entity.Property(
@@ -305,28 +314,24 @@ public class OnSiteDbContext : DbContext
                         "gen_random_uuid()");
 
                 entity.Property(e => e.UpdateId)
-                    .HasColumnName(
-                        "update_id");
+                    .HasColumnName("update_id");
 
                 entity.Property(
                     e =>
                         e.PhotoData)
-                    .HasColumnName(
-                        "photo_data")
+                    .HasColumnName("photo_data")
                     .HasColumnType("text")
                     .IsRequired();
 
                 entity.Property(
                     e =>
                         e.Caption)
-                    .HasColumnName(
-                        "caption");
+                    .HasColumnName("caption");
 
                 entity.Property(
                     e =>
                         e.CreatedAt)
-                    .HasColumnName(
-                        "created_at")
+                    .HasColumnName("created_at")
                     .HasDefaultValueSql(
                         "timezone('utc'::text, now())");
 
@@ -359,68 +364,54 @@ public class OnSiteDbContext : DbContext
                         "gen_random_uuid()");
 
                 entity.Property(e => e.DriverId)
-                    .HasColumnName(
-                        "driver_id");
+                    .HasColumnName("driver_id");
 
                 entity.Property(e => e.DriverName)
-                    .HasColumnName(
-                        "driver_name")
+                    .HasColumnName("driver_name")
                     .IsRequired();
 
                 entity.Property(e => e.Registration)
-                    .HasColumnName(
-                        "registration")
+                    .HasColumnName("registration")
                     .IsRequired();
 
                 entity.Property(e => e.TruckSize)
-                    .HasColumnName(
-                        "truck_size")
+                    .HasColumnName("truck_size")
                     .IsRequired();
 
                 entity.Property(e => e.LoadType)
-                    .HasColumnName(
-                        "load_type")
+                    .HasColumnName("load_type")
                     .IsRequired();
 
                 entity.Property(e => e.ArrivalTime)
-                    .HasColumnName(
-                        "arrival_time")
+                    .HasColumnName("arrival_time")
                     .IsRequired();
 
                 entity.Property(e => e.SiteName)
-                    .HasColumnName(
-                        "site_name")
+                    .HasColumnName("site_name")
                     .IsRequired();
 
                 entity.Property(e => e.LeavingTime)
-                    .HasColumnName(
-                        "leaving_time")
+                    .HasColumnName("leaving_time")
                     .IsRequired();
 
                 entity.Property(e => e.DieselLitres)
-                    .HasColumnName(
-                        "diesel_litres");
+                    .HasColumnName("diesel_litres");
 
                 entity.Property(e => e.DieselLocation)
-                    .HasColumnName(
-                        "diesel_location");
+                    .HasColumnName("diesel_location");
 
                 entity.Property(e => e.MileageBefore)
-                    .HasColumnName(
-                        "mileage_before");
+                    .HasColumnName("mileage_before");
 
                 entity.Property(e => e.MileageAfter)
-                    .HasColumnName(
-                        "mileage_after");
+                    .HasColumnName("mileage_after");
 
                 entity.Property(e => e.LogDate)
-                    .HasColumnName(
-                        "log_date")
+                    .HasColumnName("log_date")
                     .IsRequired();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasColumnName(
-                        "created_at")
+                    .HasColumnName("created_at")
                     .HasDefaultValueSql(
                         "timezone('utc'::text, now())");
 
@@ -433,6 +424,165 @@ public class OnSiteDbContext : DbContext
                     .HasForeignKey(
                         d =>
                             d.DriverId)
+                    .OnDelete(
+                        DeleteBehavior.Cascade);
+            });
+
+        // =====================================================
+        // DEVICE TOKENS
+        // =====================================================
+
+        modelBuilder.Entity<DeviceToken>(
+            entity =>
+            {
+                entity.ToTable(
+                    "device_tokens",
+                    "public");
+
+                entity.HasKey(
+                    e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasDefaultValueSql(
+                        "gen_random_uuid()");
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("user_id")
+                    .IsRequired();
+
+                entity.Property(e => e.Token)
+                    .HasColumnName("token")
+                    .IsRequired();
+
+                entity.Property(e => e.Platform)
+                    .HasColumnName("platform")
+                    .HasDefaultValue("android");
+
+                entity.Property(e => e.IsActive)
+                    .HasColumnName("is_active")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql(
+                        "timezone('utc'::text, now())");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnName("updated_at")
+                    .HasDefaultValueSql(
+                        "timezone('utc'::text, now())");
+
+                entity.HasIndex(
+                    e => e.Token)
+                    .IsUnique();
+
+                entity.HasOne(
+                    e => e.User)
+                    .WithMany()
+                    .HasForeignKey(
+                        e => e.UserId)
+                    .OnDelete(
+                        DeleteBehavior.Cascade);
+            });
+
+        // =====================================================
+        // NOTIFICATIONS
+        // =====================================================
+
+        modelBuilder.Entity<Notification>(
+            entity =>
+            {
+                entity.ToTable(
+                    "notifications",
+                    "public");
+
+                entity.HasKey(
+                    e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .HasDefaultValueSql(
+                        "gen_random_uuid()");
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("user_id")
+                    .IsRequired();
+
+                entity.Property(e => e.Type)
+                    .HasColumnName("type")
+                    .IsRequired();
+
+                entity.Property(e => e.Title)
+                    .HasColumnName("title")
+                    .IsRequired();
+
+                entity.Property(e => e.Message)
+                    .HasColumnName("message")
+                    .IsRequired();
+
+                entity.Property(e => e.Data)
+                    .HasColumnName("data")
+                    .HasColumnType("jsonb")
+                    .IsRequired();
+
+                entity.Property(e => e.IsRead)
+                    .HasColumnName("is_read")
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql(
+                        "timezone('utc'::text, now())");
+
+                entity.HasIndex(
+                    e =>
+                        new
+                        {
+                            e.UserId,
+                            e.CreatedAt
+                        });
+
+                entity.HasOne(
+                    e => e.User)
+                    .WithMany()
+                    .HasForeignKey(
+                        e => e.UserId)
+                    .OnDelete(
+                        DeleteBehavior.Cascade);
+            });
+
+        // =====================================================
+        // NOTIFICATION PREFERENCES
+        // =====================================================
+
+        modelBuilder.Entity<NotificationPreference>(
+            entity =>
+            {
+                entity.ToTable(
+                    "notification_preferences",
+                    "public");
+
+                entity.HasKey(
+                    e => e.UserId);
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("user_id");
+
+                entity.Property(e => e.PushEnabled)
+                    .HasColumnName("push_enabled")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnName("updated_at")
+                    .HasDefaultValueSql(
+                        "timezone('utc'::text, now())");
+
+                entity.HasOne(
+                    e => e.User)
+                    .WithMany()
+                    .HasForeignKey(
+                        e => e.UserId)
                     .OnDelete(
                         DeleteBehavior.Cascade);
             });

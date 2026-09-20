@@ -1,6 +1,6 @@
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FirebaseAdmin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,13 +8,16 @@ using OnSiteApi.Data;
 using OnSiteApi.Endpoints;
 using OnSiteApi.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder =
+    WebApplication.CreateBuilder(args);
 
 var connectionString =
     builder.Configuration.GetConnectionString(
         "DefaultConnection");
 
-if (string.IsNullOrWhiteSpace(connectionString))
+if (
+    string.IsNullOrWhiteSpace(
+        connectionString))
 {
     throw new InvalidOperationException(
         "DefaultConnection was not found.");
@@ -22,27 +25,24 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 builder.Services.AddDbContext<OnSiteDbContext>(
     options =>
-        options.UseNpgsql(connectionString));
+        options.UseNpgsql(
+            connectionString));
 
 builder.Services.AddSingleton<SupabaseAuthService>();
+
+builder.Services.AddSingleton<
+    FirebaseNotificationService>();
 
 // =====================================================
 // JSON SERIALIZATION
 // =====================================================
-// Serialize enums such as UserRole as strings instead
-// of numeric values.
-//
-// Example:
-// "role": "Foreman"
-// instead of:
-// "role": 1
-// =====================================================
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(
-        new JsonStringEnumConverter());
-});
+builder.Services.ConfigureHttpJsonOptions(
+    options =>
+    {
+        options.SerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 
 // =====================================================
 // SUPABASE JWT CONFIGURATION
@@ -68,7 +68,8 @@ var jwksJson =
         "SupabaseJWT:Jwks was not found.");
 
 var jwks =
-    new JsonWebKeySet(jwksJson);
+    new JsonWebKeySet(
+        jwksJson);
 
 // =====================================================
 // AUTHENTICATION
@@ -97,39 +98,42 @@ builder.Services
                 ValidateLifetime = true,
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKeys = jwks.Keys
+                IssuerSigningKeys =
+                    jwks.Keys
             };
     });
 
 // =====================================================
-// AUTHORIZATION POLICIES
+// AUTHORIZATION
 // =====================================================
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(
-        "AdminOnly",
-        policy =>
-            policy.RequireClaim(
-                "role",
-                "admin"));
+builder.Services.AddAuthorization(
+    options =>
+    {
+        options.AddPolicy(
+            "AdminOnly",
+            policy =>
+                policy.RequireClaim(
+                    "role",
+                    "admin"));
 
-    options.AddPolicy(
-        "ForemanOnly",
-        policy =>
-            policy.RequireClaim(
-                "role",
-                "foreman"));
+        options.AddPolicy(
+            "ForemanOnly",
+            policy =>
+                policy.RequireClaim(
+                    "role",
+                    "foreman"));
 
-    options.AddPolicy(
-        "DriverOnly",
-        policy =>
-            policy.RequireClaim(
-                "role",
-                "truck_driver"));
-});
+        options.AddPolicy(
+            "DriverOnly",
+            policy =>
+                policy.RequireClaim(
+                    "role",
+                    "truck_driver"));
+    });
 
-var app = builder.Build();
+var app =
+    builder.Build();
 
 // =====================================================
 // HTTP PIPELINE
@@ -138,6 +142,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 // =====================================================
@@ -145,20 +150,32 @@ app.UseAuthorization();
 // =====================================================
 
 app.MapProfilesEndpoints();
+
 app.MapSitesEndpoints();
+
 app.MapAssignmentsEndpoints();
+
 app.MapSiteUpdatesEndpoints();
+
 app.MapTruckLogsEndpoints();
+
+app.MapNotificationsEndpoints();
 
 // =====================================================
 // API STATUS
 // =====================================================
 
-app.MapGet("/", () => Results.Ok(new
-{
-    status = "On Site API is running.",
-    framework = ".NET 10"
-}));
+app.MapGet(
+    "/",
+    () =>
+        Results.Ok(
+            new
+            {
+                status =
+                    "On Site API is running.",
+
+                framework =
+                    ".NET 10"
+            }));
 
 app.Run();
-
