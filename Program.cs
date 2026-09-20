@@ -151,6 +151,8 @@ app.UseAuthorization();
 
 app.MapProfilesEndpoints();
 
+app.MapGoogleAuthEndpoints();
+
 app.MapSitesEndpoints();
 
 app.MapAssignmentsEndpoints();
