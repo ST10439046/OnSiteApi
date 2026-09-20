@@ -85,23 +85,23 @@ builder.Services
             JwtBearerDefaults.AuthenticationScheme;
     })
     .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters =
-            new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = issuer,
+{
+    options.TokenValidationParameters =
+        new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
 
-                ValidateAudience = true,
-                ValidAudience = audience,
+            ValidateAudience = true,
+            ValidAudience = audience,
 
-                ValidateLifetime = true,
+            ValidateLifetime = true,
 
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKeys =
-                    jwks.Keys
-            };
-    });
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKeys =
+                jwks.Keys
+        };
+});
 
 // =====================================================
 // AUTHORIZATION
