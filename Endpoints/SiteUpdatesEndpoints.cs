@@ -1,3 +1,4 @@
+```csharp
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,11 @@ public static class SiteUpdatesEndpoints
         var group =
             app.MapGroup("/api/v1/site-updates")
                 .RequireAuthorization();
+
+        // =====================================================
+        // POST /api/v1/site-updates
+        // Create or update today's report
+        // =====================================================
 
         group.MapPost(
             "/",
@@ -48,8 +54,7 @@ public static class SiteUpdatesEndpoints
                             StatusCodes.Status403Forbidden);
                 }
 
-                if (
-                    input.SiteId == Guid.Empty)
+                if (input.SiteId == Guid.Empty)
                 {
                     return Results.BadRequest(
                         new
@@ -118,10 +123,8 @@ public static class SiteUpdatesEndpoints
                                 su.UpdatePhotos)
                         .FirstOrDefaultAsync(
                             su =>
-                                su.SiteId ==
-                                    input.SiteId &&
-                                su.UpdateDate ==
-                                    today);
+                                su.SiteId == input.SiteId &&
+                                su.UpdateDate == today);
 
                 if (existingUpdate != null)
                 {
@@ -160,27 +163,29 @@ public static class SiteUpdatesEndpoints
                         db.UpdatePhotos.RemoveRange(
                             existingUpdate.UpdatePhotos);
 
+                        existingUpdate.UpdatePhotos.Clear();
+
                         foreach (
                             var photo
                             in input.Photos)
                         {
-                            existingUpdate
-                                .UpdatePhotos
-                                .Add(
-                                    new UpdatePhoto
-                                    {
-                                        PhotoData =
-                                            photo.PhotoData,
-                                        Caption =
-                                            photo.Caption
-                                    });
+                            existingUpdate.UpdatePhotos.Add(
+                                new UpdatePhoto
+                                {
+                                    PhotoData =
+                                        photo.PhotoData,
+
+                                    Caption =
+                                        photo.Caption
+                                });
                         }
                     }
 
                     await db.SaveChangesAsync();
 
                     return Results.Ok(
-                        existingUpdate);
+                        MapUpdateResponse(
+                            existingUpdate));
                 }
 
                 var newUpdate =
@@ -229,17 +234,15 @@ public static class SiteUpdatesEndpoints
                         var photo
                         in input.Photos)
                     {
-                        newUpdate
-                            .UpdatePhotos
-                            .Add(
-                                new UpdatePhoto
-                                {
-                                    PhotoData =
-                                        photo.PhotoData,
+                        newUpdate.UpdatePhotos.Add(
+                            new UpdatePhoto
+                            {
+                                PhotoData =
+                                    photo.PhotoData,
 
-                                    Caption =
-                                        photo.Caption
-                                });
+                                Caption =
+                                    photo.Caption
+                            });
                     }
                 }
 
@@ -250,8 +253,12 @@ public static class SiteUpdatesEndpoints
 
                 return Results.Created(
                     $"/api/v1/site-updates/{newUpdate.Id}",
-                    newUpdate);
+                    MapUpdateResponse(newUpdate));
             });
+
+        // =====================================================
+        // GET /api/v1/site-updates
+        // =====================================================
 
         group.MapGet(
             "/",
@@ -312,8 +319,7 @@ public static class SiteUpdatesEndpoints
                                 assignedSiteIds.Contains(
                                     su.SiteId));
                 }
-                else if (
-                    site_id.HasValue)
+                else if (site_id.HasValue)
                 {
                     query =
                         query.Where(
@@ -344,33 +350,96 @@ public static class SiteUpdatesEndpoints
                     await query.ToListAsync();
 
                 var response =
-                    updates.Select(
-                        u =>
-                            new
-                            {
-                                u.Id,
-                                u.SiteId,
-                                u.ForemanId,
-                                u.UpdateDate,
-                                u.ForecastedLabor,
-                                u.Bricklayers,
-                                u.Plasterers,
-                                u.Pavers,
-                                u.ActualLabor,
-                                u.StaffNames,
-                                u.PowerTools,
-                                u.PlantMachines,
-                                u.Notes,
-                                u.CreatedAt,
-                                u.UpdatePhotos,
-                                Variance =
-                                    u.ActualLabor -
-                                    u.ForecastedLabor
-                            });
+                    updates
+                        .Select(
+                            MapUpdateResponse)
+                        .ToList();
 
                 return Results.Ok(
                     response);
             });
+    }
+
+    // =====================================================
+    // Convert EF entity to API-safe response.
+    // Never return SiteUpdate directly because its navigation
+    // properties can create circular JSON references.
+    // =====================================================
+
+    private static object MapUpdateResponse(
+        SiteUpdate update)
+    {
+        return new
+        {
+            id =
+                update.Id,
+
+            siteId =
+                update.SiteId,
+
+            foremanId =
+                update.ForemanId,
+
+            updateDate =
+                update.UpdateDate,
+
+            forecastedLabor =
+                update.ForecastedLabor,
+
+            bricklayers =
+                update.Bricklayers,
+
+            plasterers =
+                update.Plasterers,
+
+            pavers =
+                update.Pavers,
+
+            actualLabor =
+                update.ActualLabor,
+
+            staffNames =
+                update.StaffNames,
+
+            powerTools =
+                update.PowerTools,
+
+            plantMachines =
+                update.PlantMachines,
+
+            notes =
+                update.Notes,
+
+            createdAt =
+                update.CreatedAt,
+
+            updatePhotos =
+                update.UpdatePhotos
+                    .Select(
+                        photo =>
+                            new
+                            {
+                                id =
+                                    photo.Id,
+
+                                updateId =
+                                    photo.UpdateId,
+
+                                photoData =
+                                    photo.PhotoData,
+
+                                caption =
+                                    photo.Caption,
+
+                                createdAt =
+                                    photo.CreatedAt
+                            })
+                    .ToList(),
+
+            variance =
+                update.ActualLabor -
+                update.ForecastedLabor
+        };
     }
 
     private static List<StaffInputModel> ParseStaff(
@@ -404,10 +473,9 @@ public static class SiteUpdatesEndpoints
         }
     }
 
-    private static async Task<Profile?>
-        GetCurrentUserAsync(
-            OnSiteDbContext db,
-            ClaimsPrincipal user)
+    private static async Task<Profile?> GetCurrentUserAsync(
+        OnSiteDbContext db,
+        ClaimsPrincipal user)
     {
         var sub =
             user.FindFirst(
@@ -448,3 +516,4 @@ public record SiteUpdateInputModel(
     string? PlantMachines,
     string? Notes,
     List<PhotoInputModel>? Photos);
+```
