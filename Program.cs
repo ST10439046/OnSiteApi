@@ -1,4 +1,6 @@
+
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,10 +9,6 @@ using OnSiteApi.Endpoints;
 using OnSiteApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// =====================================================
-// 1. DATABASE
-// =====================================================
 
 var connectionString =
     builder.Configuration.GetConnectionString(
@@ -26,16 +24,28 @@ builder.Services.AddDbContext<OnSiteDbContext>(
     options =>
         options.UseNpgsql(connectionString));
 
-
-// =====================================================
-// 2. SUPABASE AUTH SERVICE
-// =====================================================
-
 builder.Services.AddSingleton<SupabaseAuthService>();
 
+// =====================================================
+// JSON SERIALIZATION
+// =====================================================
+// Serialize enums such as UserRole as strings instead
+// of numeric values.
+//
+// Example:
+// "role": "Foreman"
+// instead of:
+// "role": 1
+// =====================================================
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new JsonStringEnumConverter());
+});
 
 // =====================================================
-// 3. SUPABASE JWT AUTHENTICATION
+// SUPABASE JWT CONFIGURATION
 // =====================================================
 
 var jwtSettings =
@@ -59,6 +69,10 @@ var jwksJson =
 
 var jwks =
     new JsonWebKeySet(jwksJson);
+
+// =====================================================
+// AUTHENTICATION
+// =====================================================
 
 builder.Services
     .AddAuthentication(options =>
@@ -87,9 +101,8 @@ builder.Services
             };
     });
 
-
 // =====================================================
-// 4. AUTHORIZATION
+// AUTHORIZATION POLICIES
 // =====================================================
 
 builder.Services.AddAuthorization(options =>
@@ -116,16 +129,10 @@ builder.Services.AddAuthorization(options =>
                 "truck_driver"));
 });
 
-
-// =====================================================
-// 5. BUILD
-// =====================================================
-
 var app = builder.Build();
 
-
 // =====================================================
-// 6. MIDDLEWARE
+// HTTP PIPELINE
 // =====================================================
 
 app.UseHttpsRedirection();
@@ -133,9 +140,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 // =====================================================
-// 7. API ENDPOINTS
+// API ENDPOINTS
 // =====================================================
 
 app.MapProfilesEndpoints();
@@ -144,9 +150,8 @@ app.MapAssignmentsEndpoints();
 app.MapSiteUpdatesEndpoints();
 app.MapTruckLogsEndpoints();
 
-
 // =====================================================
-// 8. ROOT / STATUS
+// API STATUS
 // =====================================================
 
 app.MapGet("/", () => Results.Ok(new
@@ -155,9 +160,5 @@ app.MapGet("/", () => Results.Ok(new
     framework = ".NET 10"
 }));
 
-
-// =====================================================
-// 9. RUN
-// =====================================================
-
 app.Run();
+
