@@ -1,4 +1,4 @@
-```csharp
+
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -578,4 +578,4 @@ public record ProfileUpdateInput(
     string? Email,
     string? Password,
     bool? IsActive);
-```
+

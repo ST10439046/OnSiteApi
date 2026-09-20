@@ -1,4 +1,4 @@
-```csharp
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -516,4 +516,4 @@ public record SiteUpdateInputModel(
     string? PlantMachines,
     string? Notes,
     List<PhotoInputModel>? Photos);
-```
+
