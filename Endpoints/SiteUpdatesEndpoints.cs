@@ -347,35 +347,24 @@ public static class SiteUpdatesEndpoints
                                 su.UpdatePhotos)
                         .AsQueryable();
 
-                if (
-                    currentUser.Role ==
-                    UserRole.Foreman)
-                {
-                    var assignedSiteIds =
-                        await db.SiteForemen
-                            .Where(
-                                sf =>
-                                    sf.ForemanId ==
-                                    currentUser.Id)
-                            .Select(
-                                sf =>
-                                    sf.SiteId)
-                            .ToListAsync();
-
-                    query =
-                        query.Where(
-                            su =>
-                                assignedSiteIds.Contains(
-                                    su.SiteId));
-                }
-                else if (site_id.HasValue)
-                {
-                    query =
-                        query.Where(
-                            su =>
-                                su.SiteId ==
-                                site_id.Value);
-                }
+if (
+    currentUser.Role ==
+    UserRole.Foreman)
+{
+    query =
+        query.Where(
+            su =>
+                su.ForemanId ==
+                currentUser.Id);
+}
+else if (site_id.HasValue)
+{
+    query =
+        query.Where(
+            su =>
+                su.SiteId ==
+                site_id.Value);
+}
 
                 if (start_date.HasValue)
                 {
