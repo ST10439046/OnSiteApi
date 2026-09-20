@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using OnSiteApi.Data;
 using OnSiteApi.Models;
+using OnSiteApi.Services;
 
 namespace OnSiteApi.Endpoints;
 
@@ -33,7 +33,8 @@ public static class SiteUpdatesEndpoints
             async (
                 SiteUpdateInputModel input,
                 OnSiteDbContext db,
-                ClaimsPrincipal userClaims) =>
+                ClaimsPrincipal userClaims,
+                FirebaseNotificationService firebase) =>
             {
                 var currentUser =
                     await GetCurrentUserAsync(
@@ -82,6 +83,22 @@ public static class SiteUpdatesEndpoints
                             StatusCodes.Status403Forbidden);
                 }
 
+                var site =
+                    await db.Sites
+                        .FirstOrDefaultAsync(
+                            s =>
+                                s.Id == input.SiteId);
+
+                if (site == null)
+                {
+                    return Results.NotFound(
+                        new
+                        {
+                            message =
+                                "Site not found."
+                        });
+                }
+
                 var staff =
                     ParseStaff(input.StaffNames);
 
@@ -125,6 +142,10 @@ public static class SiteUpdatesEndpoints
                             su =>
                                 su.SiteId == input.SiteId &&
                                 su.UpdateDate == today);
+
+                // =====================================================
+                // UPDATE EXISTING REPORT
+                // =====================================================
 
                 if (existingUpdate != null)
                 {
@@ -183,10 +204,26 @@ public static class SiteUpdatesEndpoints
 
                     await db.SaveChangesAsync();
 
+                    // =====================================================
+                    // NOTIFY ADMINS
+                    // =====================================================
+
+                    await NotifyAdminsAboutReportAsync(
+                        db,
+                        firebase,
+                        currentUser,
+                        site,
+                        existingUpdate,
+                        true);
+
                     return Results.Ok(
                         MapUpdateResponse(
                             existingUpdate));
                 }
+
+                // =====================================================
+                // CREATE NEW REPORT
+                // =====================================================
 
                 var newUpdate =
                     new SiteUpdate
@@ -250,6 +287,18 @@ public static class SiteUpdatesEndpoints
                     newUpdate);
 
                 await db.SaveChangesAsync();
+
+                // =====================================================
+                // NOTIFY ADMINS
+                // =====================================================
+
+                await NotifyAdminsAboutReportAsync(
+                    db,
+                    firebase,
+                    currentUser,
+                    site,
+                    newUpdate,
+                    false);
 
                 return Results.Created(
                     $"/api/v1/site-updates/{newUpdate.Id}",
@@ -358,6 +407,75 @@ public static class SiteUpdatesEndpoints
                 return Results.Ok(
                     response);
             });
+    }
+
+    // =====================================================
+    // Notify every active admin about a submitted report.
+    // A notification record is always created.
+    // Push delivery respects notification preferences.
+    // =====================================================
+
+    private static async Task NotifyAdminsAboutReportAsync(
+        OnSiteDbContext db,
+        FirebaseNotificationService firebase,
+        Profile foreman,
+        Site site,
+        SiteUpdate update,
+        bool isUpdate)
+    {
+        var admins =
+            await db.Profiles
+                .Where(
+                    p =>
+                        p.Role == UserRole.Admin &&
+                        p.IsActive)
+                .ToListAsync();
+
+        var title =
+            isUpdate
+                ? "Daily Report Updated"
+                : "Daily Report Submitted";
+
+        var message =
+            isUpdate
+                ? $"{foreman.FullName} updated today's report for {site.Name}."
+                : $"{foreman.FullName} submitted today's report for {site.Name}.";
+
+        var data =
+            new Dictionary<string, string>
+            {
+                ["type"] =
+                    "daily_report_submitted",
+
+                ["site_id"] =
+                    update.SiteId.ToString(),
+
+                ["update_id"] =
+                    update.Id.ToString(),
+
+                ["foreman_id"] =
+                    update.ForemanId.ToString()
+            };
+
+        foreach (var admin in admins)
+        {
+            await NotificationsEndpoints.CreateNotificationAsync(
+                db,
+                admin.Id,
+                "daily_report_submitted",
+                title,
+                message,
+                data);
+
+            await NotificationsEndpoints.SendNotificationToUserAsync(
+                db,
+                firebase,
+                admin.Id,
+                title,
+                message,
+                "daily_report_submitted",
+                data);
+        }
     }
 
     // =====================================================
@@ -516,4 +634,3 @@ public record SiteUpdateInputModel(
     string? PlantMachines,
     string? Notes,
     List<PhotoInputModel>? Photos);
-
