@@ -41,6 +41,10 @@ public static class GoogleAuthEndpoints
                 var email =
                     userClaims.FindFirst(
                         ClaimTypes.Email)
+                        ?.Value
+                    ??
+                    userClaims.FindFirst(
+                        "email")
                         ?.Value;
 
                 if (string.IsNullOrWhiteSpace(email))
@@ -83,7 +87,9 @@ public static class GoogleAuthEndpoints
                 var emailProfile =
                     await db.Profiles
                         .FirstOrDefaultAsync(
-                            p => p.Email == email);
+                            p =>
+                                p.Email.ToLower() ==
+                                email);
 
                 if (emailProfile != null)
                 {
@@ -95,14 +101,13 @@ public static class GoogleAuthEndpoints
                         });
                 }
 
-                if (string.IsNullOrWhiteSpace(input.FullName))
+                var fullName =
+                    input.FullName?.Trim();
+
+                if (string.IsNullOrWhiteSpace(fullName))
                 {
-                    return Results.BadRequest(
-                        new
-                        {
-                            message =
-                                "Full name is required."
-                        });
+                    fullName =
+                        email.Split('@')[0];
                 }
 
                 var profile =
@@ -112,7 +117,7 @@ public static class GoogleAuthEndpoints
                             userId,
 
                         FullName =
-                            input.FullName.Trim(),
+                            fullName,
 
                         Role =
                             UserRole.Foreman,
@@ -170,4 +175,4 @@ public static class GoogleAuthEndpoints
 }
 
 public record GoogleRegistrationInput(
-    string FullName);
+    string? FullName);

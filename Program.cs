@@ -141,6 +141,19 @@ var app =
 
 app.UseHttpsRedirection();
 
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (
+        context.Response.StatusCode ==
+        StatusCodes.Status401Unauthorized)
+    {
+        Console.WriteLine(
+            $"AUTH 401: {context.Request.Method} {context.Request.Path}");
+    }
+});
+
 app.UseAuthentication();
 
 app.UseAuthorization();
