@@ -15,8 +15,7 @@ public static class GoogleAuthEndpoints
         this IEndpointRouteBuilder app)
     {
         var group =
-            app.MapGroup("/api/v1/auth")
-                .RequireAuthorization();
+            app.MapGroup("/api/v1/auth");
 
         group.MapPost(
             "/google-register",
@@ -25,6 +24,13 @@ public static class GoogleAuthEndpoints
                 OnSiteDbContext db,
                 ClaimsPrincipal userClaims) =>
             {
+                if (
+                    userClaims.Identity?.IsAuthenticated !=
+                    true)
+                {
+                    return Results.Unauthorized();
+                }
+
                 var sub =
                     userClaims.FindFirst(
                         ClaimTypes.NameIdentifier)
@@ -43,8 +49,7 @@ public static class GoogleAuthEndpoints
                         ClaimTypes.Email)
                         ?.Value
                     ??
-                    userClaims.FindFirst(
-                        "email")
+                    userClaims.FindFirst("email")
                         ?.Value;
 
                 if (string.IsNullOrWhiteSpace(email))
@@ -119,6 +124,7 @@ public static class GoogleAuthEndpoints
                         FullName =
                             fullName,
 
+                        // Google registration always creates a Foreman.
                         Role =
                             UserRole.Foreman,
 
@@ -143,6 +149,7 @@ public static class GoogleAuthEndpoints
                     $"/api/v1/profiles/{profile.Id}",
                     MapProfile(profile));
             });
+
     }
 
     private static object MapProfile(
