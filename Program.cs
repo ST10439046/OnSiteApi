@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OnSiteApi.Data;
 using OnSiteApi.Endpoints;
+using OnSiteApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,107 +12,120 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. DATABASE
 // =====================================================
 
-// Get the PostgreSQL connection string from appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString =
+    builder.Configuration.GetConnectionString(
+        "DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
-        "DefaultConnection was not found in appsettings.json.");
+        "DefaultConnection was not found.");
 }
 
-// Connect Entity Framework Core to Supabase PostgreSQL
-builder.Services.AddDbContext<OnSiteDbContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<OnSiteDbContext>(
+    options =>
+        options.UseNpgsql(connectionString));
 
 
 // =====================================================
-// 2. SUPABASE JWT AUTHENTICATION
+// 2. SUPABASE AUTH SERVICE
 // =====================================================
 
-var jwtSettings = builder.Configuration.GetSection("SupabaseJWT");
+builder.Services.AddSingleton<SupabaseAuthService>();
 
-// Supabase project URL
-var issuer = jwtSettings["Issuer"]
+
+// =====================================================
+// 3. SUPABASE JWT AUTHENTICATION
+// =====================================================
+
+var jwtSettings =
+    builder.Configuration.GetSection(
+        "SupabaseJWT");
+
+var issuer =
+    jwtSettings["Issuer"]
     ?? throw new InvalidOperationException(
-        "SupabaseJWT:Issuer was not found in appsettings.json.");
+        "SupabaseJWT:Issuer was not found.");
 
-// Supabase JWT audience
-var audience = jwtSettings["Audience"]
+var audience =
+    jwtSettings["Audience"]
     ?? throw new InvalidOperationException(
-        "SupabaseJWT:Audience was not found in appsettings.json.");
+        "SupabaseJWT:Audience was not found.");
 
-// Supabase JWT signing keys
-var jwksJson = jwtSettings["Jwks"]
+var jwksJson =
+    jwtSettings["Jwks"]
     ?? throw new InvalidOperationException(
-        "SupabaseJWT:Jwks was not found in appsettings.json.");
+        "SupabaseJWT:Jwks was not found.");
 
-var jwks = new JsonWebKeySet(jwksJson);
+var jwks =
+    new JsonWebKeySet(jwksJson);
 
-
-// Configure JWT authentication
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme =
-        JwtBearerDefaults.AuthenticationScheme;
-
-    options.DefaultChallengeScheme =
-        JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services
+    .AddAuthentication(options =>
     {
-        // Check that the JWT came from your Supabase project
-        ValidateIssuer = true,
-        ValidIssuer = issuer,
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
 
-        // Check that the JWT is intended for authenticated users
-        ValidateAudience = true,
-        ValidAudience = audience,
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
 
-        // Reject expired JWTs
-        ValidateLifetime = true,
+                ValidateAudience = true,
+                ValidAudience = audience,
 
-        // Check the JWT signature
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKeys = jwks.Keys
-    };
-});
+                ValidateLifetime = true,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKeys = jwks.Keys
+            };
+    });
 
 
 // =====================================================
-// 3. AUTHORIZATION
+// 4. AUTHORIZATION
 // =====================================================
 
 builder.Services.AddAuthorization(options =>
 {
-    // Admin endpoints
     options.AddPolicy(
         "AdminOnly",
-        policy => policy.RequireClaim("role", "admin"));
+        policy =>
+            policy.RequireClaim(
+                "role",
+                "admin"));
 
-    // Foreman endpoints
     options.AddPolicy(
         "ForemanOnly",
-        policy => policy.RequireClaim("role", "foreman"));
+        policy =>
+            policy.RequireClaim(
+                "role",
+                "foreman"));
 
-    // Truck driver endpoints
     options.AddPolicy(
         "DriverOnly",
-        policy => policy.RequireClaim("role", "truck_driver"));
+        policy =>
+            policy.RequireClaim(
+                "role",
+                "truck_driver"));
 });
 
 
 // =====================================================
-// 4. BUILD APPLICATION
+// 5. BUILD
 // =====================================================
 
 var app = builder.Build();
 
 
 // =====================================================
-// 5. MIDDLEWARE
+// 6. MIDDLEWARE
 // =====================================================
 
 app.UseHttpsRedirection();
@@ -121,7 +135,7 @@ app.UseAuthorization();
 
 
 // =====================================================
-// 6. API ENDPOINTS
+// 7. API ENDPOINTS
 // =====================================================
 
 app.MapProfilesEndpoints();
@@ -132,19 +146,18 @@ app.MapTruckLogsEndpoints();
 
 
 // =====================================================
-// 7. ROOT / STATUS ENDPOINT
+// 8. ROOT / STATUS
 // =====================================================
 
 app.MapGet("/", () => Results.Ok(new
 {
     status = "On Site API is running.",
-    framework = ".NET 9"
+    framework = ".NET 10"
 }));
 
 
 // =====================================================
-// 8. RUN APPLICATION
+// 9. RUN
 // =====================================================
 
 app.Run();
-

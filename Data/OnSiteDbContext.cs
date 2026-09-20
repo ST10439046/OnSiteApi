@@ -5,7 +5,8 @@ namespace OnSiteApi.Data;
 
 public class OnSiteDbContext : DbContext
 {
-    public OnSiteDbContext(DbContextOptions<OnSiteDbContext> options) : base(options)
+    public OnSiteDbContext(DbContextOptions<OnSiteDbContext> options)
+        : base(options)
     {
     }
 
@@ -20,46 +21,107 @@ public class OnSiteDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // 1. Profiles Table Mapping
+        // =====================================================
+        // 1. PROFILES
+        // =====================================================
+
         modelBuilder.Entity<Profile>(entity =>
         {
             entity.ToTable("profiles", "public");
+
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.FullName).HasColumnName("full_name").IsRequired();
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
+
+            entity.Property(e => e.FullName)
+                .HasColumnName("full_name")
+                .IsRequired();
+
             entity.Property(e => e.Role)
                 .HasColumnName("role")
                 .HasConversion(
-                    v => v.ToString().ToLower().Replace("truckdriver", "truck_driver"),
-                    v => v == "truck_driver" ? UserRole.TruckDriver : Enum.Parse<UserRole>(v, true)
+                    v => v.ToString()
+                        .ToLower()
+                        .Replace("truckdriver", "truck_driver"),
+                    v => v == "truck_driver"
+                        ? UserRole.TruckDriver
+                        : Enum.Parse<UserRole>(v, true)
                 )
                 .IsRequired();
-            entity.Property(e => e.Phone).HasColumnName("phone");
-            entity.Property(e => e.Email).HasColumnName("email").IsRequired();
-            entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("timezone('utc'::text, now())");
-            entity.Property(e => e.Password).HasColumnName("password").IsRequired();
+
+            entity.Property(e => e.Phone)
+                .HasColumnName("phone");
+
+            entity.Property(e => e.Email)
+                .HasColumnName("email")
+                .IsRequired();
+
+            entity.Property(e => e.IsActive)
+                .HasColumnName("is_active")
+                .HasDefaultValue(true);
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql(
+                    "timezone('utc'::text, now())");
+
+            entity.Property(e => e.Password)
+                .HasColumnName("password")
+                .IsRequired(false);
         });
 
-        // 2. Sites Table Mapping
+        // =====================================================
+        // 2. SITES
+        // =====================================================
+
         modelBuilder.Entity<Site>(entity =>
         {
             entity.ToTable("sites", "public");
+
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()");
-            entity.Property(e => e.Name).HasColumnName("name").IsRequired();
-            entity.Property(e => e.Address).HasColumnName("address").IsRequired();
-            entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("timezone('utc'::text, now())");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id")
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.Name)
+                .HasColumnName("name")
+                .IsRequired();
+
+            entity.Property(e => e.Address)
+                .HasColumnName("address")
+                .IsRequired();
+
+            entity.Property(e => e.IsActive)
+                .HasColumnName("is_active")
+                .HasDefaultValue(true);
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql(
+                    "timezone('utc'::text, now())");
         });
 
-        // 3. Site Foremen Assignments Junction Table Mapping
+        // =====================================================
+        // 3. SITE FOREMEN
+        // =====================================================
+
         modelBuilder.Entity<SiteForeman>(entity =>
         {
             entity.ToTable("site_foremen", "public");
-            entity.HasKey(e => new { e.SiteId, e.ForemanId });
-            entity.Property(e => e.SiteId).HasColumnName("site_id");
-            entity.Property(e => e.ForemanId).HasColumnName("foreman_id");
+
+            entity.HasKey(e => new
+            {
+                e.SiteId,
+                e.ForemanId
+            });
+
+            entity.Property(e => e.SiteId)
+                .HasColumnName("site_id");
+
+            entity.Property(e => e.ForemanId)
+                .HasColumnName("foreman_id");
 
             entity.HasOne(d => d.Site)
                 .WithMany(p => p.SiteForemen)
@@ -72,25 +134,66 @@ public class OnSiteDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // 4. Daily Site Updates Mapping
+        // =====================================================
+        // 4. DAILY SITE UPDATES
+        // =====================================================
+
         modelBuilder.Entity<SiteUpdate>(entity =>
         {
             entity.ToTable("site_updates", "public");
+
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()");
-            entity.Property(e => e.SiteId).HasColumnName("site_id");
-            entity.Property(e => e.ForemanId).HasColumnName("foreman_id");
-            entity.Property(e => e.UpdateDate).HasColumnName("update_date").IsRequired();
-            entity.Property(e => e.ForecastedLabor).HasColumnName("forecasted_labor").HasDefaultValue(0);
-            entity.Property(e => e.Bricklayers).HasColumnName("bricklayers").HasDefaultValue(0);
-            entity.Property(e => e.Plasterers).HasColumnName("plasterers").HasDefaultValue(0);
-            entity.Property(e => e.Pavers).HasColumnName("pavers").HasDefaultValue(0);
-            entity.Property(e => e.ActualLabor).HasColumnName("actual_labor").HasDefaultValue(0);
-            entity.Property(e => e.StaffNames).HasColumnName("staff_names");
-            entity.Property(e => e.PowerTools).HasColumnName("power_tools");
-            entity.Property(e => e.PlantMachines).HasColumnName("plant_machines");
-            entity.Property(e => e.Notes).HasColumnName("notes");
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("timezone('utc'::text, now())");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id")
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.SiteId)
+                .HasColumnName("site_id");
+
+            entity.Property(e => e.ForemanId)
+                .HasColumnName("foreman_id");
+
+            entity.Property(e => e.UpdateDate)
+                .HasColumnName("update_date")
+                .IsRequired();
+
+            entity.Property(e => e.ForecastedLabor)
+                .HasColumnName("forecasted_labor")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.Bricklayers)
+                .HasColumnName("bricklayers")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.Plasterers)
+                .HasColumnName("plasterers")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.Pavers)
+                .HasColumnName("pavers")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.ActualLabor)
+                .HasColumnName("actual_labor")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.StaffNames)
+                .HasColumnName("staff_names");
+
+            entity.Property(e => e.PowerTools)
+                .HasColumnName("power_tools");
+
+            entity.Property(e => e.PlantMachines)
+                .HasColumnName("plant_machines");
+
+            entity.Property(e => e.Notes)
+                .HasColumnName("notes");
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql(
+                    "timezone('utc'::text, now())");
 
             entity.HasOne(d => d.Site)
                 .WithMany(p => p.SiteUpdates)
@@ -103,16 +206,34 @@ public class OnSiteDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // 5. Site Photo Attachments Mapping
+        // =====================================================
+        // 5. UPDATE PHOTOS
+        // =====================================================
+
         modelBuilder.Entity<UpdatePhoto>(entity =>
         {
             entity.ToTable("update_photos", "public");
+
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()");
-            entity.Property(e => e.UpdateId).HasColumnName("update_id");
-            entity.Property(e => e.StoragePath).HasColumnName("storage_path").IsRequired();
-            entity.Property(e => e.Caption).HasColumnName("caption");
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("timezone('utc'::text, now())");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id")
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.UpdateId)
+                .HasColumnName("update_id");
+
+            entity.Property(e => e.StoragePath)
+                .HasColumnName("storage_path")
+                .IsRequired();
+
+            entity.Property(e => e.Caption)
+                .HasColumnName("caption");
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql(
+                    "timezone('utc'::text, now())");
 
             entity.HasOne(d => d.SiteUpdate)
                 .WithMany(p => p.UpdatePhotos)
@@ -120,26 +241,71 @@ public class OnSiteDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // 6. Truck & Haulage Logs Mapping
+        // =====================================================
+        // 6. TRUCK LOGS
+        // =====================================================
+
         modelBuilder.Entity<TruckLog>(entity =>
         {
             entity.ToTable("truck_logs", "public");
+
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()");
-            entity.Property(e => e.DriverId).HasColumnName("driver_id");
-            entity.Property(e => e.DriverName).HasColumnName("driver_name").IsRequired();
-            entity.Property(e => e.Registration).HasColumnName("registration").IsRequired();
-            entity.Property(e => e.TruckSize).HasColumnName("truck_size").IsRequired();
-            entity.Property(e => e.LoadType).HasColumnName("load_type").IsRequired();
-            entity.Property(e => e.ArrivalTime).HasColumnName("arrival_time").IsRequired();
-            entity.Property(e => e.SiteName).HasColumnName("site_name").IsRequired();
-            entity.Property(e => e.LeavingTime).HasColumnName("leaving_time").IsRequired();
-            entity.Property(e => e.DieselLitres).HasColumnName("diesel_litres");
-            entity.Property(e => e.DieselLocation).HasColumnName("diesel_location");
-            entity.Property(e => e.MileageBefore).HasColumnName("mileage_before");
-            entity.Property(e => e.MileageAfter).HasColumnName("mileage_after");
-            entity.Property(e => e.LogDate).HasColumnName("log_date").IsRequired();
-            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("timezone('utc'::text, now())");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id")
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.DriverId)
+                .HasColumnName("driver_id");
+
+            entity.Property(e => e.DriverName)
+                .HasColumnName("driver_name")
+                .IsRequired();
+
+            entity.Property(e => e.Registration)
+                .HasColumnName("registration")
+                .IsRequired();
+
+            entity.Property(e => e.TruckSize)
+                .HasColumnName("truck_size")
+                .IsRequired();
+
+            entity.Property(e => e.LoadType)
+                .HasColumnName("load_type")
+                .IsRequired();
+
+            entity.Property(e => e.ArrivalTime)
+                .HasColumnName("arrival_time")
+                .IsRequired();
+
+            entity.Property(e => e.SiteName)
+                .HasColumnName("site_name")
+                .IsRequired();
+
+            entity.Property(e => e.LeavingTime)
+                .HasColumnName("leaving_time")
+                .IsRequired();
+
+            entity.Property(e => e.DieselLitres)
+                .HasColumnName("diesel_litres");
+
+            entity.Property(e => e.DieselLocation)
+                .HasColumnName("diesel_location");
+
+            entity.Property(e => e.MileageBefore)
+                .HasColumnName("mileage_before");
+
+            entity.Property(e => e.MileageAfter)
+                .HasColumnName("mileage_after");
+
+            entity.Property(e => e.LogDate)
+                .HasColumnName("log_date")
+                .IsRequired();
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql(
+                    "timezone('utc'::text, now())");
 
             entity.HasOne(d => d.Driver)
                 .WithMany(p => p.TruckLogs)
