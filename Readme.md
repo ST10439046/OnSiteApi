@@ -7,6 +7,9 @@ mobile app link:
 
 https://github.com/EMKNDN/emkndn-prog7314-2026-prog7314-poe-st10352114
 
+<img width="1908" height="918" alt="image" src="https://github.com/user-attachments/assets/ddebb4eb-4ead-4259-a5b9-26aeb81abc55" />
+
+
 ### 1. Project Configuration & Tech Stack
 - Framework: ASP.NET Core Minimal API (Web API template)
 - Database ORM: Entity Framework Core (EF Core) with PostgreSQL provider (Npgsql.EntityFrameworkCore.PostgreSQL)
