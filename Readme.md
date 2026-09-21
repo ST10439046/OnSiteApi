@@ -1,3 +1,8 @@
+MEMBER:
+1. ST10352114
+2. ST10437452
+3. ST10439046
+
 mobile app link:
 
 https://github.com/EMKNDN/emkndn-prog7314-2026-prog7314-poe-st10352114
