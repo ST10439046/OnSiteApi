@@ -1,4 +1,6 @@
+mobile app link:
 
+https://github.com/EMKNDN/emkndn-prog7314-2026-prog7314-poe-st10352114
 
 ### 1. Project Configuration & Tech Stack
 - Framework: ASP.NET Core Minimal API (Web API template)
