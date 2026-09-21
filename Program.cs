@@ -172,8 +172,6 @@ app.MapAssignmentsEndpoints();
 
 app.MapSiteUpdatesEndpoints();
 
-app.MapTruckLogsEndpoints();
-
 app.MapNotificationsEndpoints();
 
 // =====================================================
