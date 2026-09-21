@@ -31,5 +31,5 @@ public class Profile
 
     public ICollection<SiteUpdate> SiteUpdates { get; set; } = new List<SiteUpdate>();
 
-    public ICollection<TruckLog> TruckLogs { get; set; } = new List<TruckLog>();
+   
 }
