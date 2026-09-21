@@ -26,8 +26,7 @@ public class OnSiteDbContext : DbContext
     public DbSet<UpdatePhoto> UpdatePhotos =>
         Set<UpdatePhoto>();
 
-    public DbSet<TruckLog> TruckLogs =>
-        Set<TruckLog>();
+
 
     public DbSet<DeviceToken> DeviceTokens =>
         Set<DeviceToken>();
@@ -348,86 +347,7 @@ public class OnSiteDbContext : DbContext
                         DeleteBehavior.Cascade);
             });
 
-        modelBuilder.Entity<TruckLog>(
-            entity =>
-            {
-                entity.ToTable(
-                    "truck_logs",
-                    "public");
-
-                entity.HasKey(
-                    e => e.Id);
-
-                entity.Property(e => e.Id)
-                    .HasColumnName("id")
-                    .HasDefaultValueSql(
-                        "gen_random_uuid()");
-
-                entity.Property(e => e.DriverId)
-                    .HasColumnName("driver_id");
-
-                entity.Property(e => e.DriverName)
-                    .HasColumnName("driver_name")
-                    .IsRequired();
-
-                entity.Property(e => e.Registration)
-                    .HasColumnName("registration")
-                    .IsRequired();
-
-                entity.Property(e => e.TruckSize)
-                    .HasColumnName("truck_size")
-                    .IsRequired();
-
-                entity.Property(e => e.LoadType)
-                    .HasColumnName("load_type")
-                    .IsRequired();
-
-                entity.Property(e => e.ArrivalTime)
-                    .HasColumnName("arrival_time")
-                    .IsRequired();
-
-                entity.Property(e => e.SiteName)
-                    .HasColumnName("site_name")
-                    .IsRequired();
-
-                entity.Property(e => e.LeavingTime)
-                    .HasColumnName("leaving_time")
-                    .IsRequired();
-
-                entity.Property(e => e.DieselLitres)
-                    .HasColumnName("diesel_litres");
-
-                entity.Property(e => e.DieselLocation)
-                    .HasColumnName("diesel_location");
-
-                entity.Property(e => e.MileageBefore)
-                    .HasColumnName("mileage_before");
-
-                entity.Property(e => e.MileageAfter)
-                    .HasColumnName("mileage_after");
-
-                entity.Property(e => e.LogDate)
-                    .HasColumnName("log_date")
-                    .IsRequired();
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnName("created_at")
-                    .HasDefaultValueSql(
-                        "timezone('utc'::text, now())");
-
-                entity.HasOne(
-                    d =>
-                        d.Driver)
-                    .WithMany(
-                        p =>
-                            p.TruckLogs)
-                    .HasForeignKey(
-                        d =>
-                            d.DriverId)
-                    .OnDelete(
-                        DeleteBehavior.Cascade);
-            });
-
+       
         // =====================================================
         // DEVICE TOKENS
         // =====================================================
