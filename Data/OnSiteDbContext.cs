@@ -5,6 +5,7 @@ namespace OnSiteApi.Data;
 
 public class OnSiteDbContext : DbContext
 {
+    
     public OnSiteDbContext(
         DbContextOptions<OnSiteDbContext> options)
         : base(options)
