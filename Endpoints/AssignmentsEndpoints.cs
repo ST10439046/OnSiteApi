@@ -71,6 +71,12 @@ public static class AssignmentsEndpoints
                         "Site not found.");
                 }
 
+                if (!site.IsActive)
+                {
+                    return Results.Conflict(
+                        "Cannot assign a foreman to a finished site. Reopen the site first.");
+                }
+
                 // =====================================================
                 // Verify foreman exists
                 // =====================================================
