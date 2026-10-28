@@ -99,6 +99,16 @@ public static class SiteUpdatesEndpoints
                         });
                 }
 
+                if (!site.IsActive)
+                {
+                    return Results.Conflict(
+                        new
+                        {
+                            message =
+                                "This site is finished and cannot accept daily reports. Ask an administrator to reopen it."
+                        });
+                }
+
                 var staff =
                     ParseStaff(input.StaffNames);
 
