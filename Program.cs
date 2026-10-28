@@ -13,7 +13,9 @@ var builder =
 
 var connectionString =
     builder.Configuration.GetConnectionString(
-        "DefaultConnection");
+        "DefaultConnection")
+    ?? builder.Configuration[
+        "DefaultConnection:ConnectionString"];
 
 if (
     string.IsNullOrWhiteSpace(
