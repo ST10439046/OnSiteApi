@@ -100,7 +100,23 @@ public static class SitesEndpoints
 
             if (input.Name != null) site.Name = input.Name;
             if (input.Address != null) site.Address = input.Address;
-            if (input.IsActive.HasValue) site.IsActive = input.IsActive.Value;
+
+            if (input.IsActive.HasValue)
+            {
+                var wasActive = site.IsActive;
+                site.IsActive = input.IsActive.Value;
+
+                // Closing a site releases its foremen but preserves the
+                // site, reports, and photos for historical review.
+                if (wasActive && !site.IsActive)
+                {
+                    var assignments = await db.SiteForemen
+                        .Where(sf => sf.SiteId == site.Id)
+                        .ToListAsync();
+
+                    db.SiteForemen.RemoveRange(assignments);
+                }
+            }
 
             await db.SaveChangesAsync();
             return Results.Ok(site);
