@@ -189,7 +189,7 @@ public static class SiteUpdatesEndpoints
                     existingUpdate.Notes =
                         input.Notes;
 
-                    if (input.Photos != null)
+                    if (input.Photos != null && input.Photos.Count > 0)
                     {
                         db.UpdatePhotos.RemoveRange(
                             existingUpdate.UpdatePhotos);
