@@ -1,0 +1,13 @@
+# .NET build output
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Local and environment-specific configuration
+appsettings.Development.json
+appsettings.Local.json
+.env
+.env.*
+!.env.example
