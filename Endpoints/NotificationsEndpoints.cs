@@ -205,8 +205,8 @@ public static class NotificationsEndpoints
                     await db.Notifications
                         .Where(
                             x =>
-                                x.UserId ==
-                                currentUser.Id)
+                                x.UserId == currentUser.Id &&
+                                !x.IsRead)
                         .OrderByDescending(
                             x =>
                                 x.CreatedAt)
