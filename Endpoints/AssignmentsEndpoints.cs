@@ -71,6 +71,12 @@ public static class AssignmentsEndpoints
                         "Site not found.");
                 }
 
+                if (!site.IsActive)
+                {
+                    return Results.Conflict(
+                        "Cannot assign a foreman to a finished site. Reopen the site first.");
+                }
+
                 // =====================================================
                 // Verify foreman exists
                 // =====================================================
@@ -162,29 +168,35 @@ public static class AssignmentsEndpoints
                             foreman.Id.ToString()
                     };
 
-                await NotificationsEndpoints
-                    .CreateNotificationAsync(
-                        db,
-                        foreman.Id,
-                        "site_assigned",
-                        title,
-                        message,
-                        data);
+                // Assignment persistence is the primary operation. Notification delivery
+                // is best-effort: a push provider failure must not make a successful
+                // assignment look like a failed request to the administrator.
+                try
+                {
+                    await NotificationsEndpoints
+                        .CreateNotificationAsync(
+                            db,
+                            foreman.Id,
+                            "site_assigned",
+                            title,
+                            message,
+                            data);
 
-                // =====================================================
-                // Send push notification.
-                // This respects the foreman's push preference.
-                // =====================================================
-
-                await NotificationsEndpoints
-                    .SendNotificationToUserAsync(
-                        db,
-                        firebase,
-                        foreman.Id,
-                        title,
-                        message,
-                        "site_assigned",
-                        data);
+                    await NotificationsEndpoints
+                        .SendNotificationToUserAsync(
+                            db,
+                            firebase,
+                            foreman.Id,
+                            title,
+                            message,
+                            "site_assigned",
+                            data);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(
+                        $"Assignment notification failed for foreman {foreman.Id}: {ex.Message}");
+                }
 
                 return Results.Created(
                     $"/api/v1/assignments?site_id={assignment.SiteId}&foreman_id={assignment.ForemanId}",
